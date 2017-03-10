@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Arc" basedir="." default="release">
+    
+    <property file="project.properties"/>
+    <property file="ant.properties"/>
+    
+    <!-- ANT环境变量 -->
+    <property environment="env" />
+    <!-- NDK 相关 -->
+    <property name="ndk-root" value="${env.NDK_ROOT}" /> 
+    <property name="ndk-build" value="${env.NDK_ROOT}/ndk-build" />
+    <property name="QUICK_COCOS2DX_ROOT" value="${basedir}/../../../lib/cocos2d-x/" />
+    <property name="COCOS2DX_ROOT" value="${basedir}/../../../lib/cocos2d-x/" />
+    <property name="libcocos2dx-dir" value="${basedir}/../../../lib/cocos2d-x/cocos2dx/platform/android/java" />
+    <property name="libcocos2dx-dir-res" value="${libcocos2dx-dir}/res" />
+    
+    <property name="FacebookDir" value="${basedir}/../proj.depends/facebook" />
+    <property name="AppV7Dir" value="${basedir}/../proj.depends/appcompat" />
+    
+    <!-- 应用名称 -->    
+    <property name="appName" value="${ant.project.name}"/>
+        
+    <!-- SDK目录(获取操作系统环境变量ANDROID_SDK_HOME的值) -->    
+    <property name="sdk-folder" value="${env.ANDROID_SDK_ROOT}" />    
+    <property name="sdk-platform-folder" value="${sdk-folder}/platforms/android-10"/>
+    <property name="sdk-platform-folder-18" value="${sdk-folder}/platforms/android-18"/>
+           
+    <property name="sdk-tools" value="${sdk-folder}/tools" />      
+    <property name="sdk-platform-tools" value="${sdk-folder}/build-tools/android-4.3" />  
+      
+       
+    <!-- 使用到的命令(当前系统为windows,如果系统为linux,可将.bat文件替换成相对应的命令) -->    
+    <property name="aapt" value="${sdk-platform-tools}/aapt" />    
+    <property name="aidl" value="${sdk-platform-tools}/aidl" />    
+    <property name="dx" value="${sdk-platform-tools}/dx" />    
+    <property name="apkbuilder" value="${sdk-tools}/apkbuilder.bat"/>
+<!-- 
+    <property name="jarsigner" value="${env.java_home}/bin/jarsigner" />    
+     -->
+    <property name="jarsigner" value="jarsigner" />    
+    
+    <property name="zipalign" value="${sdk-tools}/zipalign" /> 
+        
+    <!-- 编译需要的jar; 如果项目使用到地图服务则需要maps.jar -->    
+    <property name="android-jar" value="${sdk-platform-folder}/android.jar" />  
+    <property name="android-jar-18" value="${sdk-platform-folder-18}/android.jar" /> 
+    
+    <property name="annotation-jar" value="${sdk-folder}/tools/support/annotations.jar" />
+    <property name="annotation-jar-dir" value="${sdk-folder}/tools/support" />
+    
+ 
+    <property name="channelname" value="" />    
+    <property name="channelkey" value="" />   
+          
+    <!-- 编译aidl文件所需的预处理框架文件framework.aidl -->    
+    <property name="framework-aidl" value="${sdk-platform-folder}/framework.aidl" />    
+    <!-- 清单文件 -->    
+    <property name="manifest-xml" value="${basedir}/AndroidManifest.xml" /> 
+   	
+    
+    <!-- 生成文件相关 -->
+    <property name="keystore-file" value="${basedir}/arcmobile.keystore" />
+   	<!-- classes.dex相关变量 -->
+   	<property name="dex-file-path" value="${outdir-bin}/classes.dex" /> 
+   	<!-- 经过aapt生成的资源包文件 -->
+   	<property name="resources-package-path" value="${outdir-bin}/resources.ap_" /> 
+   	 
+    <!-- 版本 --> 
+    <property name="version" value="0.9.1" /> 
+    <property name="versioncode" value="6" /> 
+      
+    <!-- 初始化工作 -->    
+    <target name="clean">    
+        <echo>clean project ...</echo>
+        <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${basedir}/bin"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${basedir}/gen"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        
+         
+        
+        <!-- <delete dir="${basedir}/obj" /> -->
+        
+        <mkdir dir="${basedir}/obj" />
+        <mkdir dir="${basedir}/bin" />    
+        <mkdir dir="${basedir}/gen" />
+        <mkdir dir="${basedir}/bin/classes" />
+        
+   </target>
+   
+   <target name="build-native" depends="clean">
+       <echo>build cpp files....</echo>
+       <echo>${ndk-build}</echo>
+       <exec executable="${ndk-build}" failonerror="true">
+           <arg value="NDK_DEBUG=0"/>
+           <arg value="-C"/>
+           <arg value="${basedir}"/>
+       </exec>    
+   </target>
+   
+   <target name="cocos2dx_clean">
+	    <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${libcocos2dx-dir}/bin"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        
+        <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${libcocos2dx-dir}/gen"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        
+        <mkdir dir="${libcocos2dx-dir}/bin/classes" />    
+        <mkdir dir="${libcocos2dx-dir}/gen" />
+	</target>
+	
+   <!-- 额外加入生成BuildConfig的过程 -->
+	<!-- 生成BuildConfig.java文件  -->
+	<target name="gen-arc-BuildConfig" depends = "build-native">
+		<echo>Generating BuildConfig.java...</echo>
+		<java jar="${basedir}/GenBuildConfig.jar" fork="true" failonerror="true">
+            <jvmarg value="-Dmaximum.inlined.code.length=32" />
+			<arg value="abdir" />
+			<arg value="${basedir}/gen" />
+			<arg value="pakage" />
+			<arg value="com.sqr.xdsg.nineplay" />
+			<arg value="debug" />
+			<arg value="false" />
+		</java>
+	</target>
+	
+	<target name="gen-cocos2dxlib-BuildConfig" depends = "cocos2dx_clean">
+		<echo>Generating BuildConfig.java...</echo>
+		<java jar="${basedir}/GenBuildConfig.jar" fork="true" failonerror="true">
+            <jvmarg value="-Dmaximum.inlined.code.length=32" />
+			<arg value="abdir" />
+			<arg value="${libcocos2dx-dir}/gen" />
+			<arg value="pakage" />
+			<arg value="org.cocos2dx.lib" />
+			<arg value="debug" />
+			<arg value="false" />
+		</java>
+	</target>
+	    
+   <!-- 根据工程中的资源文件生成R.java文件  -->    
+   <target name="gen-R" depends="main-crunch" >
+        <echo>生成R.java文件 manifest.xml....</echo>    
+        <exec executable="${aapt}" failonerror="true">    
+            <arg value="package" />    
+            <arg value="-m" />
+            <arg value="-v" />
+            <arg value="--auto-add-overlay" />
+            <arg value="--output-text-symbols" />
+            <arg value="${basedir}/bin"/>   
+            <arg value="-J" />    
+            <arg value="${basedir}/gen"/>
+            <arg value="-M" />    
+            <arg value="${basedir}/AndroidManifest.xml" /> 
+            <arg value="-S" />    
+            <arg value="${basedir}/res" />
+            <arg value="-S" />
+            <arg value="${libcocos2dx-dir}/res" />
+            <arg value="-S" />
+            <arg value="${FacebookDir}/res" />
+            <!-- 
+			<arg value="-S" />
+            <arg value="${AppV7Dir}/res" />
+             -->
+            <arg value="-I" />    
+            <arg value="${android-jar-18}" />    
+        </exec>    
+    </target>
+    
+   <target name="cocos2dxlib-gen-R" depends="gen-cocos2dxlib-BuildConfig">    
+        <echo>生成R.java文件 manifest.xml....</echo>    
+        <exec executable="${aapt}" failonerror="true">    
+            <arg value="package" /> 
+            <arg value="-m" />
+            <arg value="-v" />
+            <arg value="--non-constant-id" />
+            <arg value="--output-text-symbols" />
+            <arg value="${libcocos2dx-dir}/bin"/>   
+            <arg value="-J" />    
+            <arg value="${libcocos2dx-dir}/gen" />    
+            <arg value="-S" />    
+            <arg value="${libcocos2dx-dir}/res" />
+            <arg value="-M" />    
+            <arg value="${libcocos2dx-dir}/AndroidManifest.xml" />    
+            <arg value="-I" />    
+            <arg value="${android-jar}" />    
+        </exec>    
+    </target>
+    
+	<!-- 将libcocos2dx工程中的java源文件编译成class文件 -->
+	<target name="compile-cocos2dxlib" depends="cocos2dxlib-gen-R">
+		<javac encoding="utf-8" 
+                target="1.6"
+				source="1.6"				
+                includeantruntime="false"
+                srcdir="${libcocos2dx-dir}/src:${libcocos2dx-dir}/gen"
+                destdir="${libcocos2dx-dir}/bin/classes"   
+                bootclasspath="${android-jar}" 
+                verbose="false" 
+                >    
+            <compilerarg line="-encoding UTF-8"/>   
+            <classpath>
+            </classpath> 
+        </javac>
+	</target>
+	
+	<!--  生成libcocos2dx.jar-->
+	<target name="gen-cocos2dxlib" depends="compile-cocos2dxlib">
+		<jar jarfile="${libcocos2dx-dir}/bin/libcocos2dx.jar" basedir="${libcocos2dx-dir}/bin/classes">
+		    <manifest>
+		    </manifest>
+		</jar>
+	</target>
+    
+	
+	<!-- ******************************  faceBook BEGINE ****************************** -->
+	<target name="faceBook_clean">
+	    <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${FacebookDir}/gen"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${FacebookDir}/bin"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        <mkdir dir="${FacebookDir}/bin/classes"/>
+	</target>
+	
+	<target name="gen-FB-BuildConfig" depends="faceBook_clean">
+		<echo>Generating BuildConfig.java...</echo>
+		<java jar="${basedir}/GenBuildConfig.jar" fork="true" failonerror="true">
+            <jvmarg value="-Dmaximum.inlined.code.length=32" />
+			<arg value="abdir" />
+			<arg value="${FacebookDir}/gen" />
+			<arg value="pakage" />
+			<arg value="com.facebook.android"/>
+			<arg value="debug" />
+			<arg value="false" />
+		</java>
+	</target>
+	
+   <target name="FB-gen-R" depends= "gen-FB-BuildConfig">    
+        <echo>生成facebook R.java文件 manifest.xml....</echo>    
+        <exec executable="${aapt}" failonerror="true">    
+            <arg value="package" />    
+            <arg value="-f" />    
+            <arg value="-m" />
+            <arg value="-v" />
+            <arg value="--non-constant-id" />
+            <arg value="--output-text-symbols" />
+            <arg value="${FacebookDir}/bin"/>
+            <arg value="-J" />    
+            <arg value="${FacebookDir}/gen" />    
+            <arg value="-S" />    
+            <arg value="${FacebookDir}/res" />
+            <arg value="-M" />    
+            <arg value="${FacebookDir}/AndroidManifest.xml" />    
+            <arg value="-I" />    
+            <arg value="${android-jar}" />    
+        </exec>    
+    </target>
+    
+   
+   <target name="FB-crunch" depends="FB-gen-R">
+		<exec executable="${aapt}" failonerror="true">    
+            <arg value="crunch" />
+            <arg value="-v" /> 
+            <arg value="-S" />
+            <arg value="${FacebookDir}/res" />
+            <arg value="-C" />
+            <arg value="${FacebookDir}/bin/res/crunch" />
+        </exec>
+	</target>
+	
+   	<!-- 将MoMo工程中的java源文件编译成class文件 -->
+	<target name="FB-compile" depends="FB-crunch">
+		<javac encoding="utf-8" 
+                target="1.6"
+                source="1.6"   
+                includeantruntime="false"
+                srcdir="${FacebookDir}/src:${FacebookDir}/gen"
+                destdir="${FacebookDir}/bin/classes"   
+                bootclasspath="${android-jar}" 
+                verbose="false"
+                >    
+            <compilerarg line="-encoding UTF-8"/>   
+            <classpath>
+                <fileset dir="${FacebookDir}/libs" includes="*.jar"/>
+                <fileset dir="${annotation-jar-dir}" includes="annotations.jar"/>
+            </classpath> 
+        </javac>
+	</target>
+	
+	<!--  生成momo.jar-->
+	<target name="FB-jar" depends="FB-compile">
+		<jar jarfile="${FacebookDir}/bin/FacebookSdk.jar" basedir="${FacebookDir}/bin/classes">
+		    <manifest>
+		    </manifest>
+		</jar>
+	</target>   
+	
+	<!-- ****************************** faceBook ******************************  -->
+	
+	
+	<!-- ******************************  v7兼容包 BEGINE ****************************** -->
+	<target name="Appv7_clean">
+	    <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${AppV7Dir}/gen"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        <delete
+            includeemptydirs="true"
+            verbose="true" >
+            <fileset
+                dir="${AppV7Dir}/bin"
+                includes="**/*" >
+            </fileset>
+        </delete>
+        <mkdir dir="${AppV7Dir}/bin/classes"/>
+	</target>
+	
+	<target name="gen-Appv7-BuildConfig" depends="Appv7_clean">
+		<echo>Generating BuildConfig.java...</echo>
+		<java jar="${basedir}/GenBuildConfig.jar" fork="true" failonerror="true">
+            <jvmarg value="-Dmaximum.inlined.code.length=32" />
+			<arg value="abdir" />
+			<arg value="${AppV7Dir}/gen" />
+			<arg value="pakage" />
+			<arg value="android.support.v7.appcompat"/>
+			<arg value="debug" />
+			<arg value="false" />
+		</java>
+	</target>
+        
+    <target name="Appv7-crunch" depends="gen-Appv7-BuildConfig">
+		<exec executable="${aapt}" failonerror="true">    
+            <arg value="crunch" />
+            <arg value="-v" /> 
+            <arg value="-S" />
+            <arg value="${AppV7Dir}/res" />
+            <arg value="-C" />
+            <arg value="${AppV7Dir}/bin/res/crunch" />
+        </exec>
+	</target>
+	
+   <target name="Appv7-gen-R" depends="Appv7-crunch">
+        <echo>打包资源 v7</echo>    
+        <exec executable="${aapt}" failonerror="true">    
+            <arg value="package" />
+            <arg value="-m" /> 
+            <arg value="-v" />
+            <arg value="--non-constant-id" />
+            <arg value="--output-text-symbols" />
+            <arg value="${AppV7Dir}/bin" />
+            <arg value="-J" />
+            <arg value="${AppV7Dir}/gen" />
+            <arg value="-M" />
+            <arg value="${AppV7Dir}/AndroidManifest.xml" />
+            <arg value="-S" />
+            <arg value="${AppV7Dir}/res" />
+            <arg value="-I" />
+            <arg value="${android-jar-18}"/> 
+        </exec>    
+    </target>
+    
+   	<!-- 将MoMo工程中的java源文件编译成class文件 -->
+	
+	<target name="AppV7-compile" depends="Appv7-gen-R">
+		<javac encoding="utf-8" 
+                target="1.6"
+                source="1.6"   
+                includeantruntime="false"
+                srcdir="${AppV7Dir}/src:${AppV7Dir}/gen"
+                destdir="${AppV7Dir}/bin/classes"   
+                bootclasspath="${android-jar-18}" 
+                verbose="true" 
+                >    
+            <compilerarg line="-encoding UTF-8"/>   
+            <classpath>
+                <fileset dir="${AppV7Dir}/libs" includes="*.jar"/>
+                <fileset dir="${annotation-jar-dir}" includes="annotations.jar"/>
+            </classpath> 
+        </javac>
+	</target>
+	
+	<!--  生成jar--> 	
+	<target name="Appv7-jar" depends="AppV7-compile">
+		<jar jarfile="${AppV7Dir}/bin/android-support-v7-appcompat.jar" basedir="${AppV7Dir}/bin/classes">
+		    <manifest>
+		    </manifest>
+		</jar>
+	</target>
+	
+			
+
+	
+	<!-- ****************************** v7兼容包 ******************************  -->
+	
+    <target name="main-crunch" depends="gen-arc-BuildConfig">
+		<exec executable="${aapt}" failonerror="true">    
+            <arg value="crunch" />
+            <arg value="-v" /> 
+            <arg value="-S" />
+            <arg value="${basedir}/res" />
+            <arg value="-C" />
+            <arg value="${basedir}/bin/res/crunch" />
+        </exec>
+	</target>
+	
+    <!-- 将工程中的java源文件编译成class文件 Appv7-jar -->    
+    <target name="compile" depends="gen-cocos2dxlib,Appv7-jar,FB-jar,gen-R">
+        <echo>java源文件编译成class文件....</echo>    
+        <javac encoding="utf-8" 
+                target="1.6"
+				source="1.6"
+                includeantruntime="false"   
+                srcdir="${basedir}/src:${basedir}/gen"   
+                destdir="${basedir}/bin/classes"   
+                bootclasspath="${android-jar}" 
+                verbose="false" 
+                >    
+            <compilerarg line="-encoding UTF-8"/>   
+            <classpath>
+                <!-- 
+                <fileset dir="${AppV7Dir}/libs" includes="android-support-v7-appcompat.jar"/>
+                <fileset dir="${AppV7Dir}/bin" includes="*.jar"/>
+                 -->
+                <fileset dir="${libcocos2dx-dir}/bin" includes="*.jar"/>
+				<fileset dir="${libcocos2dx-dir}/libs" includes="*.jar"/>
+                <fileset dir="${basedir}/libs" includes="*.jar"/>
+                <fileset dir="${FacebookDir}/bin" includes="*.jar"/>
+                <fileset dir="${FacebookDir}/libs" includes="*.jar"/>
+            </classpath> 
+        </javac>    
+    </target>   
+      
+      
+    <!-- 将.class文件转化成.dex文件 -->    
+    <target name="dex" depends="compile">    
+        <echo>将.class文件转化成.dex文件....</echo>    
+        <exec executable="${dx}" failonerror="true" >
+            <arg value="--verbose" />    
+            <arg value="--dex" />   
+            <!-- 输出文件 -->    
+            <arg value="--output=${basedir}/bin/classes.dex" />    
+            <!-- 要生成.dex文件的源classes和libraries -->   
+            <arg value="${basedir}/bin/classes" />    
+            <arg value="${libcocos2dx-dir}/bin/classes"/>
+            <arg value="${FacebookDir}/bin/classes"/>
+            <!-- 
+            <arg value="${AppV7Dir}/bin/classes"/>
+            <arg value="${AppV7Dir}/libs"/>
+             -->
+            <arg value="${libcocos2dx-dir}/libs" />
+            <arg value="${FacebookDir}/libs"/>
+            
+            <arg value="${basedir}/libs" />   
+        </exec>
+    </target>   
+      
+    <!-- 将资源文件放进输出目录,打包资源 -->    
+    <target name="package-res-and-assets">    
+        <echo>打包资源....</echo>      
+        <exec executable="${aapt}" failonerror="true">    
+            <arg value="package" />
+            <arg value="-v" />
+            <arg value="-S" />    
+            <arg value="${basedir}/bin/res/crunch" />
+            <arg value="-S" />    
+            <arg value="${basedir}/res" />
+            <arg value="-S" />    
+            <arg value="${libcocos2dx-dir}/res" />
+            <arg value="-S" />    
+           	<arg value="${FacebookDir}/bin/res/crunch" />
+           	<arg value="-S" /> 
+           	<arg value="${FacebookDir}/res" />
+
+           	<arg value="-S" />
+       		<arg value="${AppV7Dir}/bin/res/crunch" />
+           	<arg value="-S" />
+       		<arg value="${AppV7Dir}/res" />
+           
+            
+            <arg value="-f" />    
+            <arg value="--no-crunch" />
+            <arg value="--auto-add-overlay" />
+            <arg value="-M" />    
+            <arg value="${basedir}/AndroidManifest.xml" />   
+            <arg value="-A" />    
+            <arg value="${basedir}/assets" />    
+            <arg value="-I" />    
+            <arg value="${android-jar-18}" />
+            <arg value="-F" />    
+            <arg value="${basedir}/bin/resources.ap_" />   
+        </exec>  
+    </target>
+      
+    <!-- 打包成未签证的apk -->    
+    <target name="package" depends="dex, package-res-and-assets">  
+        <echo>打包成未签证的apk....</echo>
+        <java fork="true" failonerror="true" classname="com.android.sdklib.build.ApkBuilderMain">
+            <arg value="${basedir}/bin/arcMobile.apk"/>
+        	<arg value="-u" />    
+            <arg value="-v" />
+            <arg value="-z" />
+            <arg value="${basedir}/bin/resources.ap_" />
+            <arg value="-f" />
+            <arg value="${basedir}/bin/classes.dex" />
+            <arg value="-rf" />
+            <arg value="${basedir}/src" />
+            <arg value="-nf" />    
+            <arg value="${basedir}/libs" />
+            <arg value="-rj" />
+            <arg value="${libcocos2dx-dir}/libs" />
+            <!-- 
+            <arg value="-rj" />
+            <arg value="${AppV7Dir}/libs" />
+             -->
+            <arg value="-rj" />
+            <arg value="${FacebookDir}/libs" />
+            <arg value="-rj" />
+            <arg value="${basedir}/libs" />
+        <classpath path="${sdk-folder}/tools/lib/sdklib.jar"/>
+        </java>   
+    </target>    
+      
+    <!-- 对apk进行签证 -->    
+    <target name="jarsigner" depends="package">    
+        <echo>Packaging signed apk for release...</echo>    
+        <exec executable="${jarsigner}" failonerror="true">    
+          <arg line="-verbose -sigalg SHA1withDSA -digestalg SHA1" />   
+            <arg value="-keystore" />    
+            <arg value="${basedir}/arcmobile.keystore" />    
+            <arg value="-storepass" />    
+            <arg value="kxjhsqr123456" />    
+            <arg value="-keypass" />    
+            <arg value="kxjhsqr123456" />    
+            <arg value="-signedjar" />    
+            <arg value="${basedir}/bin/arc_mobile_signed.apk" />    
+            <arg value="${basedir}/bin/arcMobile.apk"/>
+            <arg value="arcmobile.keystore" /> 
+        </exec>    
+    </target>    
+        
+    <target name="zipalign" depends="jarsigner">
+        <exec executable="${zipalign}" failonerror="true"> 
+            <arg value="-v" /> 
+            <arg value="4" /> 
+            <arg value="${basedir}/bin/arc_mobile_signed.apk" /> 
+            <arg value="${basedir}/bin/${android.apkname}" /> 
+        </exec> 
+    </target> 
+    
+    <!-- 发布 -->    
+    <target name="release" depends="zipalign">    
+        <!-- 删除未签证apk --> 
+        <delete file="${basedir}/bin/arcMobile.apk"/>    
+        <delete file="${basedir}/bin/arc_mobile_signed.apk"/>
+        <echo>APK is released.</echo>    
+    </target>
+</project>

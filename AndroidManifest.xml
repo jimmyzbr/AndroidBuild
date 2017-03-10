@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.nsplay.sch2.android"
+    android:versionCode="322624"
+    android:versionName="1.2.1">
+
+    <uses-sdk android:minSdkVersion="10"/>
+    <uses-feature android:glEsVersion="0x00020000" />
+    <supports-screens android:largeScreens="true" android:smallScreens="true" android:anyDensity="true" android:normalScreens="true"/>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+	<uses-permission android:name="android.permission.VIBRATE"/>
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    
+    <uses-permission android:name="com.google.android.gsm.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" /> 
+	<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" /> 
+	<permission android:name="com.nsplay.sch2.android.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+	<uses-permission android:name="com.nsplay.sch2.android.permission.C2D_MESSAGE" />
+	<uses-permission android:name="com.android.vending.BILLING"/>
+	<uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+	
+	
+	<!-- Push service 运行需要的权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    
+    <uses-permission android:name="android.permission.GET_TASKS" />
+	<uses-permission android:name="android.permission.REORDER_TASKS" />
+	
+    <application android:label="@string/app_name" android:icon="@drawable/app144" android:allowBackup="true">
+        
+	   		<activity android:name="com.sqr.xdsg.nineplay.LaunchActivity" android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" 
+       			android:screenOrientation="landscape" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen">
+            		<intent-filter>
+                		<action android:name="android.intent.action.MAIN" />
+                		<category android:name="android.intent.category.LAUNCHER" />
+            		</intent-filter>
+        	</activity>
+
+		<activity android:name="com.sqr.xdsg.nineplay.AppActivity" android:launchMode="singleTop" android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        	android:screenOrientation="landscape" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen" >   
+        </activity>
+        
+		<activity 
+		    android:name="com.niceplay.niceplaytoollist.NPToolWebView" 
+		    android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+		    android:background="#00000000">
+        </activity>
+        <service android:name="com.niceplay.niceplaytoollist.NPToolListService"/>
+		
+        <activity
+            android:name="com.niceplay.authclient.AuthClientActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name="com.niceplay.authclient.Changepassword"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name="com.niceplay.authclient.Registration"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name="com.niceplay.authclient.Fastregistration"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+         
+        <activity
+            android:name="com.niceplay.niceplaycpinew.CPIActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        
+       	<activity
+            android:name="com.niceplay.niceplaymycard.NicePlayMyCardActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        
+       	<receiver
+			android:name = "com.niceplay.niceplaygcm.NicePlayBroadcastReceiver"
+		    android:permission="com.google.android.c2dm.permission.SEND" >
+             <intent-filter>
+				<action android:name="com.google.android.c2dm.intent.RECEIVE" /> 
+				<action android:name="com.google.android.c2dm.intent.REGISTRATION" /> 
+				<category android:name="com.nsplay.sch2.android" />
+			</intent-filter> 
+		</receiver>
+		<service android:name="com.niceplay.niceplaygcm.GCMIntentService" />
+		
+		<activity
+			android:name="com.niceplay.niceplaygb.NicePlayGBilling"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+			android:background="#00000000"
+			android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+			android:screenOrientation="landscape"
+			android:excludeFromRecents="true" >
+		</activity>
+		
+		 
+		<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/app_id" />
+
+        <activity android:name="com.facebook.LoginActivity" >
+        </activity>
+        <activity android:name="com.niceplay.niceplayfb.PickFriendsActivity" 
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|touchscreen"
+			android:screenOrientation="landscape">
+        </activity>
+        
+        <receiver
+            android:name="com.appsflyer.MultipleInstallBroadcastReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="it.partytrack.sdk.ReferrerReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        
+        <!-- 指定这个apk是完整包(小于资源),还是正式包(小于50M) 1:完整包 0:正式包-->
+        <meta-data android:name="fullPackage" android:value="1" />
+		
+		
+		<!-- push service start -->
+		
+		<!-- 4.6.0版本增加一个可选的Activity声明 -->
+        <activity
+            android:name="com.baidu.android.pushservice.PushKeepAlive"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        
+		<!-- 用于接收系统消息以保证PushService正常运行 -->
+		<receiver android:name="com.baidu.android.pushservice.PushServiceReceiver"
+			android:process=":bdservice_v1" >
+			<intent-filter>
+				<action android:name="android.intent.action.BOOT_COMPLETED" />
+				<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+				<action android:name="com.baidu.android.pushservice.action.notification.SHOW" />
+				<action android:name="com.baidu.android.pushservice.action.media.CLICK" />
+				<!-- 以下四项为可选的action声明，可大大提高service存活率和消息到达速度 -->
+				<action android:name="android.intent.action.MEDIA_MOUNTED" />
+				<action android:name="android.intent.action.USER_PRESENT" />
+				<action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+				<action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+			</intent-filter>
+		</receiver>
+		<!-- Push服务接收客户端发送的各种请求-->
+		<receiver android:name="com.baidu.android.pushservice.RegistrationReceiver"
+			android:process=":bdservice_v1" >
+			<intent-filter>
+				<action android:name="com.baidu.android.pushservice.action.METHOD" />
+				<action android:name="com.baidu.android.pushservice.action.BIND_SYNC" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.PACKAGE_REMOVED" />
+				<data android:scheme="package" />
+			</intent-filter>                   
+		</receiver>
+		<service android:name="com.baidu.android.pushservice.PushService" android:exported="true" 
+			android:process=":bdservice_v1" >
+			<intent-filter >
+					<action android:name="com.baidu.android.pushservice.action.PUSH_SERVICE" />
+			</intent-filter>
+		</service>
+		<!-- 4.4版本新增的CommandService声明，提升小米和魅族手机上的实际推送到达率 -->
+		<service android:name="com.baidu.android.pushservice.CommandService"
+			android:exported="true" />
+		
+		<!-- 此处Receiver名字修改为当前包名路径 -->
+		<receiver android:name="com.sqr.xdsg.nineplay.MyPushMessageReceiver">
+		    <intent-filter>
+		        <!-- 接收push消息 --> 
+		        <action android:name="com.baidu.android.pushservice.action.MESSAGE" />
+		        <!-- 接收bind、setTags等method的返回结果--> 
+		        <action android:name="com.baidu.android.pushservice.action.RECEIVE" />
+		        <!-- 接收通知点击事件，和通知自定义内容 --> 
+		        <action android:name="com.baidu.android.pushservice.action.notification.CLICK" />
+		    </intent-filter>
+		</receiver>
+		<!-- push结束 -->
+            
+    </application>
+</manifest>
